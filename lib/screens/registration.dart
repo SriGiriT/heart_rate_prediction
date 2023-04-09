@@ -19,7 +19,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late DateTime _dob = DateTime.parse("1900-02-27");
   late String _bloodGroup = "A+";
   late bool _hasPreviousAttack = false;
-  late List<Map<String, String>> _emergencyContacts = [];
+  late List<EmergencyContact> _emergencyContacts = [];
 
   Future<void> _register() async {
     final prefs = await SharedPreferences.getInstance();
@@ -165,8 +165,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   itemCount: _emergencyContacts.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      title: Text(_emergencyContacts[index]['name']!),
-                      subtitle: Text(_emergencyContacts[index]['number']!),
+                      title: Text(_emergencyContacts[index].name),
+                      subtitle: Text(_emergencyContacts[index].number),
                       trailing: IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () {
@@ -240,10 +240,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
                                   setState(() {
-                                    _emergencyContacts.add({
-                                      'name': name,
-                                      'number': number,
-                                    });
+                                    EmergencyContact temp = EmergencyContact(
+                                        name: name, number: number);
+                                    _emergencyContacts.add(temp);
                                   });
                                   Navigator.pop(context, true);
                                 }
@@ -279,7 +278,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           dob: _dob.toString(),
                           bloodGroup: _bloodGroup,
                           hasPreviousAttack: _hasPreviousAttack,
-                          emergencyContacts: EmergencyContact.fromMap(_emergencyContacts[0]));
+                          emergencyContacts: _emergencyContacts);
                       print('name: $_username');
                       print('age: $_age');
                       print('Date of Birth: $_dob');

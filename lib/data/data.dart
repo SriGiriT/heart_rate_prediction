@@ -14,7 +14,7 @@ class Data1 {
   String dob;
   String bloodGroup;
   bool hasPreviousAttack;
-  EmergencyContact emergencyContacts;
+  List<EmergencyContact> emergencyContacts;
 }
 
 class EmergencyContact {

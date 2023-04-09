@@ -13,6 +13,7 @@ class DetailsPage extends StatefulWidget {
 
 class _DetailsPageState extends State<DetailsPage> {
   late Data1 data;
+  List<EmergencyContact> emergencyContacts = [];
 
   @override
   void initState() {
@@ -28,8 +29,8 @@ class _DetailsPageState extends State<DetailsPage> {
     String bloodGroup = prefs.getString('bloodGroup') ?? '';
     bool hasAttacked = prefs.getBool('hasAttacked') ?? false;
     List<String> encodedContacts = prefs.getStringList('emergencyContacts') ?? [];
-    EmergencyContact emergencyContacts =
-        encodedContacts.map((e) => EmergencyContact.fromJson(json.decode(e))).toList()[0];
+    // EmergencyContact emergencyContacts =
+    //     encodedContacts.map((e) => EmergencyContact.fromJson(json.decode(e))).toList()[0];
 
     setState(() {
       this.data = Data1(
@@ -85,28 +86,28 @@ class _DetailsPageState extends State<DetailsPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            // Text("name : ${emergencyContacts}")
-            // if (data.emergencyContacts.isEmpty)
-            // Text(
-            //   'No contacts added',
-            //   style: TextStyle(fontSize: 16),
-            // ),
-            // for (var contact in data.emergencyContacts)
-            //   Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Text(
-            //         'Name: ${contact.name}',
-            //         style: TextStyle(fontSize: 16),
-            //       ),
-            //       SizedBox(height: 8),
-            //       Text(
-            //         'Number: ${contact.number}',
-            //         style: TextStyle(fontSize: 16),
-            //       ),
-            //       SizedBox(height: 16),
-            // ],
-            // ),
+            Text("name : ${emergencyContacts}"),
+            if (data.emergencyContacts.isEmpty)
+            Text(
+              'No contacts added',
+              style: TextStyle(fontSize: 16),
+            ),
+            for (var contact in data.emergencyContacts)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Name: ${contact.name}',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Number: ${contact.number}',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 16),
+            ],
+            ),
           ],
         ),
       ),
