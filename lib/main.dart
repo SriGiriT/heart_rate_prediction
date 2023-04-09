@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:heart_rate_prediction/screens/bluetooth.dart';
 import 'package:heart_rate_prediction/screens/message_page.dart';
 import 'package:heart_rate_prediction/screens/registration.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,10 +36,17 @@ class MyApp extends StatelessWidget {
             final dob = prefs?.getString('dob');
             final bloodGroup = prefs?.getString('bloodGroup');
             final hasPreviousAttack = prefs?.getBool('hasPreviousAttack');
-            final emergencyContactsJson = prefs?.getStringList('emergencyContacts');
-            final emergencyContacts = emergencyContactsJson?.map((e) => json.decode(e)).toList() ?? [];
+            final emergencyContactsJson =
+                prefs?.getStringList('emergencyContacts');
+            final emergencyContacts =
+                emergencyContactsJson?.map((e) => json.decode(e)).toList() ??
+                    [];
 
-            if (name == null || age == null || dob == null || bloodGroup == null || hasPreviousAttack == null) {
+            if (name == null ||
+                age == null ||
+                dob == null ||
+                bloodGroup == null ||
+                hasPreviousAttack == null) {
               return RegistrationPage();
             }
 
@@ -55,7 +63,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 Future<SharedPreferences> _initialize() async {
   return SharedPreferences.getInstance();

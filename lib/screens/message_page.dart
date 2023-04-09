@@ -12,7 +12,8 @@ class MessagePage extends StatefulWidget {
 
 class _MessagePageState extends State<MessagePage> {
   late TwilioFlutter twilioFlutter;
-  String number = "9344953235";
+  List<String> number = ["9344953235", "8610733899"];
+
 
   @override
   void initState() {
@@ -45,13 +46,7 @@ class _MessagePageState extends State<MessagePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          sendSms("testing");
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes
+      
     );
   }
 }

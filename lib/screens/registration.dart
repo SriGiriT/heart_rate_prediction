@@ -19,7 +19,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late DateTime _dob = DateTime.parse("1900-02-27");
   late String _bloodGroup = "A+";
   late bool _hasPreviousAttack = false;
-  late List<EmergencyContact> _emergencyContacts = [];
+  late List<Map<String, String>> _emergencyContacts = [];
 
   Future<void> _register() async {
     final prefs = await SharedPreferences.getInstance();
@@ -28,8 +28,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
     prefs.setString('dob', _dob.toString());
     prefs.setString('bloodGroup', _bloodGroup);
     prefs.setBool('hasPreviousAttack', _hasPreviousAttack);
-    prefs.setStringList('emergencyContacts',
-        _emergencyContacts.map((e) => json.encode(e)).toList());
+    // prefs.setStringList('emergencyContacts',
+    //     _emergencyContacts.map((e) => json.encode(e)).toList());
+    EmergencyContactStorage.saveContacts(_emergencyContacts);
   }
 
   @override
@@ -165,8 +166,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   itemCount: _emergencyContacts.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      title: Text(_emergencyContacts[index].name),
-                      subtitle: Text(_emergencyContacts[index].number),
+                      title: Text(_emergencyContacts[index]['name']!),
+                      subtitle: Text(_emergencyContacts[index]['number']!),
                       trailing: IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () {
@@ -187,7 +188,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       builder: (BuildContext context) {
                         late String name;
                         late String number;
-
                         return AlertDialog(
                           title: Text('Add Emergency Contact'),
                           content: Column(
@@ -240,9 +240,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
                                   setState(() {
-                                    EmergencyContact temp = EmergencyContact(
-                                        name: name, number: number);
-                                    _emergencyContacts.add(temp);
+                                    _emergencyContacts
+                                        .add({"name": name, "number": number});
+                                    // EmergencyContact temp = EmergencyContact(
+                                    //     name: name, number: number);
+                                    // _emergencyContacts.add(temp);
                                   });
                                   Navigator.pop(context, true);
                                 }
@@ -279,12 +281,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           bloodGroup: _bloodGroup,
                           hasPreviousAttack: _hasPreviousAttack,
                           emergencyContacts: _emergencyContacts);
-                      print('name: $_username');
-                      print('age: $_age');
-                      print('Date of Birth: $_dob');
-                      print('Blood Group: $_bloodGroup');
-                      print('Previous Attack: $_hasPreviousAttack');
-                      print('Emergency Contacts: $_emergencyContacts');
                       Navigator.push(
                         context,
                         MaterialPageRoute(

@@ -13,7 +13,7 @@ class DetailsPage extends StatefulWidget {
 
 class _DetailsPageState extends State<DetailsPage> {
   late Data1 data;
-  List<EmergencyContact> emergencyContacts = [];
+  List<Map<String, String>> emergencyContacts = [];
 
   @override
   void initState() {
@@ -28,7 +28,7 @@ class _DetailsPageState extends State<DetailsPage> {
     String dateOfBirth = prefs.getString('dob') ?? '';
     String bloodGroup = prefs.getString('bloodGroup') ?? '';
     bool hasAttacked = prefs.getBool('hasAttacked') ?? false;
-    List<String> encodedContacts = prefs.getStringList('emergencyContacts') ?? [];
+    List<Map<String, dynamic>> encodedContacts = await EmergencyContactStorage.loadContacts();
     // EmergencyContact emergencyContacts =
     //     encodedContacts.map((e) => EmergencyContact.fromJson(json.decode(e))).toList()[0];
 
@@ -97,12 +97,12 @@ class _DetailsPageState extends State<DetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Name: ${contact.name}',
+                    'Name: ${contact['name']}',
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Number: ${contact.number}',
+                    'Number: ${contact['number']}',
                     style: TextStyle(fontSize: 16),
                   ),
                   SizedBox(height: 16),
