@@ -19,7 +19,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
   late DateTime _dob = DateTime.parse("1900-02-27");
   late String _bloodGroup = "A+";
   late bool _hasPreviousAttack = false;
-  late List<Map<String, String>> _emergencyContacts = [];
+  late List<String> _emergencyContactsName = [];
+  late List<String> _emergencyContactsNumber = [];
 
   Future<void> _register() async {
     final prefs = await SharedPreferences.getInstance();
@@ -28,9 +29,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
     prefs.setString('dob', _dob.toString());
     prefs.setString('bloodGroup', _bloodGroup);
     prefs.setBool('hasPreviousAttack', _hasPreviousAttack);
+    prefs.setStringList('emergencyContactsName', _emergencyContactsName);
+    prefs.setStringList('emergencyContactsNumber', _emergencyContactsNumber);
     // prefs.setStringList('emergencyContacts',
     //     _emergencyContacts.map((e) => json.encode(e)).toList());
-    EmergencyContactStorage.saveContacts(_emergencyContacts);
   }
 
   @override
@@ -163,16 +165,17 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 SizedBox(height: 16.0),
                 ListView.builder(
                   shrinkWrap: true,
-                  itemCount: _emergencyContacts.length,
+                  itemCount: _emergencyContactsName.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      title: Text(_emergencyContacts[index]['name']!),
-                      subtitle: Text(_emergencyContacts[index]['number']!),
+                      title: Text(_emergencyContactsName[index]),
+                      subtitle: Text(_emergencyContactsNumber[index]),
                       trailing: IconButton(
                         icon: Icon(Icons.delete),
                         onPressed: () {
                           setState(() {
-                            _emergencyContacts.removeAt(index);
+                            _emergencyContactsName.removeAt(index);
+                            _emergencyContactsNumber.removeAt(index);
                           });
                         },
                       ),
@@ -240,11 +243,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
                                   setState(() {
-                                    _emergencyContacts
-                                        .add({"name": name, "number": number});
-                                    // EmergencyContact temp = EmergencyContact(
-                                    //     name: name, number: number);
-                                    // _emergencyContacts.add(temp);
+                                    _emergencyContactsName.add(name);
+                                    _emergencyContactsNumber.add(number);
                                   });
                                   Navigator.pop(context, true);
                                 }
@@ -280,7 +280,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           dob: _dob.toString(),
                           bloodGroup: _bloodGroup,
                           hasPreviousAttack: _hasPreviousAttack,
-                          emergencyContacts: _emergencyContacts);
+                          emergencyContactsName: _emergencyContactsName,
+                          emergencyContactsNumber: _emergencyContactsNumber);
                       Navigator.push(
                         context,
                         MaterialPageRoute(

@@ -28,7 +28,10 @@ class _DetailsPageState extends State<DetailsPage> {
     String dateOfBirth = prefs.getString('dob') ?? '';
     String bloodGroup = prefs.getString('bloodGroup') ?? '';
     bool hasAttacked = prefs.getBool('hasAttacked') ?? false;
-    List<Map<String, dynamic>> encodedContacts = await EmergencyContactStorage.loadContacts();
+    List<String> emergencyContactsName =
+        prefs.getStringList('emergencyContactsName') ?? [];
+    List<String> emergencyContactsNumber =
+        prefs.getStringList('emergencyContactsNumber') ?? [];
     // EmergencyContact emergencyContacts =
     //     encodedContacts.map((e) => EmergencyContact.fromJson(json.decode(e))).toList()[0];
 
@@ -39,7 +42,8 @@ class _DetailsPageState extends State<DetailsPage> {
         dob: dateOfBirth.toString().substring(0, 10),
         bloodGroup: bloodGroup,
         hasPreviousAttack: hasAttacked,
-        emergencyContacts: emergencyContacts,
+        emergencyContactsName: emergencyContactsName,
+        emergencyContactsNumber: emergencyContactsNumber
       );
     });
   }
@@ -53,62 +57,64 @@ class _DetailsPageState extends State<DetailsPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Name: ${data.username}',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Age: ${data.age}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Date of Birth: ${data.dob}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Blood Group: ${data.bloodGroup}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Previous Attack: ${data.hasPreviousAttack ? 'Yes' : 'No'}',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Emergency Contacts:',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text("name : ${emergencyContacts}"),
-            if (data.emergencyContacts.isEmpty)
-            Text(
-              'No contacts added',
-              style: TextStyle(fontSize: 16),
-            ),
-            for (var contact in data.emergencyContacts)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Name: ${contact['name']}',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Number: ${contact['number']}',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 16),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Name: ${data.username}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Age: ${data.age}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Date of Birth: ${data.dob}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Blood Group: ${data.bloodGroup}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Previous Attack: ${data.hasPreviousAttack ? 'Yes' : 'No'}',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Emergency Contacts:',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              if (data.emergencyContactsName.isEmpty)
+                Text(
+                  'No contacts added',
+                  style: TextStyle(fontSize: 20),
+                ),
+              for (var i=0;i<data.emergencyContactsName.length;i++)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Name: ${data.emergencyContactsName[i]}',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Number: ${data.emergencyContactsNumber[i]}',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    SizedBox(height: 16),
+                  ],
+                ),
             ],
-            ),
-          ],
+          ),
         ),
       ),
     );
