@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -18,18 +17,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:math';
 import 'dart:async';
 
-enum Gender {
-  male,
-  female,
-}
+
 
 class MainPage extends StatefulWidget {
   @override
   _MainPageState createState() => _MainPageState();
 }
+
 class _MainPageState extends State<MainPage> {
-  late BluetoothConnection connection;
-  bool isConnected = true;
   late TwilioFlutter twilioFlutter;
   late Gender selectedGender = Gender.male;
   int heartRate = 89;
@@ -48,36 +43,7 @@ class _MainPageState extends State<MainPage> {
     
     super.initState();
   }
-  Future<void> connectToDevice() async {
-    BluetoothDevice selectedDevice = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => DiscoveryPage(),
-      ),
-    );
 
-    if (selectedDevice != null) {
-      BluetoothConnection newConnection =
-          await BluetoothConnection.toAddress(selectedDevice.address);
-
-      setState(() {
-        connection = newConnection;
-        isConnected = true;
-      });
-
-      newConnection.input!.listen((Uint8List data) {
-        setState(() {
-          print(String.fromCharCodes(data));
-          messages.add(String.fromCharCodes(data));
-        });
-      });
-
-      newConnection.input!.listen(null, onDone: () {
-        setState(() {
-          isConnected = false;
-        });
-      });
-    }
-  }
   void getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('username') ?? '';
