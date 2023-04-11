@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:heart_rate_prediction/constant.dart';
+import 'package:heart_rate_prediction/screens/bluetooth.dart';
 import 'package:heart_rate_prediction/screens/main_page.dart';
 import 'package:intl/intl.dart';
 import 'package:heart_rate_prediction/data/data.dart';
@@ -285,7 +286,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => MainPage(),
+                          builder: (context) => BluetoothScreen(),
                         ),
                       );
                     }

@@ -1,12 +1,15 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:heart_rate_prediction/components/icon_content.dart';
 import 'package:heart_rate_prediction/components/reusable_card.dart';
 import 'package:heart_rate_prediction/constant.dart';
 import 'package:heart_rate_prediction/components/bottom_button.dart';
 import 'package:heart_rate_prediction/components/round_icon_button.dart';
 import 'package:heart_rate_prediction/data/data.dart';
+import 'package:heart_rate_prediction/screens/bluetooth.dart';
 import 'package:heart_rate_prediction/screens/details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twilio_flutter/twilio_flutter.dart';
@@ -24,11 +27,10 @@ class MainPage extends StatefulWidget {
   @override
   _MainPageState createState() => _MainPageState();
 }
-
-
 class _MainPageState extends State<MainPage> {
+  late BluetoothConnection connection;
+  bool isConnected = true;
   late TwilioFlutter twilioFlutter;
-  // List<String> number = ["9344953235", "8610733899"];
   late Gender selectedGender = Gender.male;
   int heartRate = 89;
   int bp = 108;
@@ -39,21 +41,43 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     getUserData();
-    Timer.periodic(Duration(seconds: 6), (timer) {
-      heartRate = generateHeartRate(85, 100);
-      bp = generateBp(95, 120);
-      air = generateair(85, 90);
-      temp = generatetemp(96.8, 98.4);
-      sp02 = generatespo2(85, 90);
-      print("Heart Rate: $heartRate bpm");
-    });
     twilioFlutter = TwilioFlutter(
         accountSid: "ACe52b8ec3949369210debd07d18593e02",
         authToken: "${dotenv.env['TOKEN']}",
         twilioNumber: "+15074485128");
+    
     super.initState();
   }
+  Future<void> connectToDevice() async {
+    BluetoothDevice selectedDevice = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DiscoveryPage(),
+      ),
+    );
 
+    if (selectedDevice != null) {
+      BluetoothConnection newConnection =
+          await BluetoothConnection.toAddress(selectedDevice.address);
+
+      setState(() {
+        connection = newConnection;
+        isConnected = true;
+      });
+
+      newConnection.input!.listen((Uint8List data) {
+        setState(() {
+          print(String.fromCharCodes(data));
+          messages.add(String.fromCharCodes(data));
+        });
+      });
+
+      newConnection.input!.listen(null, onDone: () {
+        setState(() {
+          isConnected = false;
+        });
+      });
+    }
+  }
   void getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('username') ?? '';
@@ -80,53 +104,13 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  Random random = new Random();
-  int generateBp(int min, int max) {
-    bp = min + random.nextInt(5);
-    setState(() {
-      bp = bp;
-    });
-    return bp;
-  }
-
-  int generateHeartRate(int min, int max) {
-    heartRate = min + random.nextInt(5);
-    setState(() {
-      heartRate = heartRate;
-    });
-    return heartRate;
-  }
-
-  int generateair(int min, int max) {
-    air = min + random.nextInt(2);
-    setState(() {
-      air = air;
-    });
-    return air;
-  }
-
-  double generatetemp(double min, double max) {
-    temp = min + random.nextDouble() * 2;
-    setState(() {
-      temp = temp;
-    });
-    return temp;
-  }
-
-  int generatespo2(int min, int max) {
-    sp02 = min + random.nextInt(5);
-    setState(() {
-      sp02 = sp02;
-    });
-    return sp02;
-  }
-
   void sendSms(String message) async {
     for (int i = 0; i < data.emergencyContactsNumber.length; i++) {
       print(data.emergencyContactsNumber);
       twilioFlutter.sendSMS(
           toNumber: "+91${data.emergencyContactsNumber[i]}",
-          messageBody: '${data.username} currently have some health issues with readings of\n$message');
+          messageBody:
+              '${data.username} currently have some health issues with readings of\n$message');
     }
   }
 

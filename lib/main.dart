@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         primaryColor: Color(0xFF0A0E21),
         scaffoldBackgroundColor: Color(0xFF0A0E21),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: FutureBuilder(
         future: _initialize(),
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
               return RegistrationPage();
             }
 
-            return MainPage();
+            return BluetoothScreen();
           } else {
             return Scaffold(
               body: Center(
