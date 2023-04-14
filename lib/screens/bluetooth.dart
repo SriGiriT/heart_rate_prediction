@@ -54,6 +54,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           values.add(value);
           i = endIndex;
         }
+        if (ind >= val.length) break;
         varr = val[++ind];
       }
     }
@@ -170,8 +171,11 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                     // Do something with the body temperature value
                     break;
                   case "SPO2":
-                    sp02 = double.parse(value.replaceAll('C',
-                        '')); // Remove the C suffix and parse the value as a double
+                    sp02 = double.parse(value.replaceAll('C', ''));
+                    if (sp02 < 10) {
+                      sp02 += 90;
+                    }
+                    // Remove the C suffix and parse the value as a double
                     // Do something with the air temperature value
                     break;
                   default:

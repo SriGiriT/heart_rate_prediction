@@ -21,6 +21,13 @@ class _DetailsPageState extends State<DetailsPage> {
     super.initState();
   }
 
+
+  Future<void> update() async{
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setStringList('emergencyContactsName', data.emergencyContactsName);
+    prefs.setStringList('emergencyContactsNumber', data.emergencyContactsNumber);
+  }
+
   void getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('username') ?? '';
@@ -92,73 +99,77 @@ class _DetailsPageState extends State<DetailsPage> {
                     'Emergency Contacts:',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  IconButton(onPressed: () async {
-                    final result = await showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        late String name;
-                        late String number;
-                        return AlertDialog(
-                          title: Text('Add Emergency Contact'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              TextFormField(
-                                onChanged: (value) {
-                                  name = value;
-                                },
-                                decoration: InputDecoration(labelText: 'Name'),
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return 'Please enter the name';
-                                  }
-                                  return null;
-                                },
-                                onSaved: (value) {
-                                  name = value!;
-                                },
+                  IconButton(
+                      onPressed: () async {
+                        final result = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            late String name;
+                            late String number;
+                            return AlertDialog(
+                              title: Text('Add Emergency Contact'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  TextFormField(
+                                    onChanged: (value) {
+                                      name = value;
+                                    },
+                                    decoration:
+                                        InputDecoration(labelText: 'Name'),
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return 'Please enter the name';
+                                      }
+                                      return null;
+                                    },
+                                    onSaved: (value) {
+                                      name = value!;
+                                    },
+                                  ),
+                                  TextFormField(
+                                    onChanged: (value) {
+                                      number = value;
+                                    },
+                                    decoration:
+                                        InputDecoration(labelText: 'Number'),
+                                    keyboardType: TextInputType.phone,
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return 'Please enter the number';
+                                      }
+                                      return null;
+                                    },
+                                    onSaved: (value) {
+                                      number = value!;
+                                    },
+                                  ),
+                                ],
                               ),
-                              TextFormField(
-                                onChanged: (value) {
-                                  number = value;
-                                },
-                                decoration:
-                                    InputDecoration(labelText: 'Number'),
-                                keyboardType: TextInputType.phone,
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return 'Please enter the number';
-                                  }
-                                  return null;
-                                },
-                                onSaved: (value) {
-                                  number = value!;
-                                },
-                              ),
-                            ],
-                          ),
-                          actions: <Widget>[
-                            ElevatedButton(
-                              child: Text('CANCEL'),
-                              onPressed: () {
-                                Navigator.pop(context, null);
-                              },
-                            ),
-                            ElevatedButton(
-                              child: Text('ADD'),
-                              onPressed: () {
-                                  setState(() {
-                                    data.emergencyContactsName.add(name);
-                                    data.emergencyContactsNumber.add(number);
-                                  });
-                                  Navigator.pop(context, true);
-                                }
-                            ),
-                          ],
+                              actions: <Widget>[
+                                ElevatedButton(
+                                  child: Text('CANCEL'),
+                                  onPressed: () {
+                                    Navigator.pop(context, null);
+                                  },
+                                ),
+                                ElevatedButton(
+                                    child: Text('ADD'),
+                                    onPressed: () {
+                                      setState(() {
+                                        data.emergencyContactsName.add(name);
+                                        data.emergencyContactsNumber
+                                            .add(number);
+                                      });
+                                      update();
+                                      Navigator.pop(context, true);
+                                    }),
+                              ],
+                            );
+                          },
                         );
                       },
-                    );
-                  }, icon: Icon(Icons.add))
+                      icon: Icon(Icons.add))
                 ],
               ),
               SizedBox(height: 8),
