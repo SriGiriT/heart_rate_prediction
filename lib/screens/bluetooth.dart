@@ -19,6 +19,7 @@ class BluetoothScreen extends StatefulWidget {
 
 class _BluetoothScreenState extends State<BluetoothScreen> {
   late TwilioFlutter twilioFlutter;
+  String tempp = "";
   late Gender selectedGender = Gender.male;
   double heartRate = 89;
   double bp = 108;
@@ -35,6 +36,28 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         twilioNumber: "+15074485128");
 
     super.initState();
+  }
+
+  List<String> extractValues(String input) {
+    List<String> values = [];
+    List<String> val = ["BPM", "mmHg", "%", "F", "%", "", ""];
+    int ind = 0;
+    String varr = val[ind];
+    for (int i = 0; i < input.length; i++) {
+      if (input[i] == ':') {
+        int endIndex = input.indexOf("$varr", i + 1);
+        if (endIndex == -1) {
+          values.add(input.substring(i + 1).trim());
+          break;
+        } else {
+          String value = input.substring(i + 1, endIndex).trim();
+          values.add(value);
+          i = endIndex;
+        }
+        varr = val[++ind];
+      }
+    }
+    return values;
   }
 
   void getUserData() async {
@@ -96,50 +119,68 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       newConnection.input!.listen((Uint8List data) {
         setState(() {
           // print(String.fromCharCodes(data));
-          messages.add(String.fromCharCodes(data));
-          String curr = String.fromCharCodes(data);
-          List<String> lines = curr.split(RegExp(r"\r\n|\r|\n"));
-          print(lines);
-          for (String line in lines) {
-            List<String> parts = line.split(':');
-            // Split each line into key-value pairs
-            if (parts.length > 1) {
-              String key = parts[0]
-                  .trim(); // Extract the key and remove any leading/trailing spaces
-              String value = parts[1]
-                  .trim(); // Extract the value and remove any leading/trailing spaces
-              print("${parts[0]}\n ${parts[1]}");
-              switch (key) {
-                case "Blood Oxygen":
-                  heartRate = double.parse(value.replaceAll('%',
-                      '')); // Remove the % symbol and parse the value as a double
-                  // Do something with the oxygen value
-                  break;
-                case "Blood Pressure":
-                  bp = double.parse(value.replaceAll('BPM',
-                      '')); // Remove the BPM suffix and parse the value as an integer
-                  // Do something with the pressure value
-                  break;
-                case "Air Humidity":
-                  air = double.parse(value.replaceAll('%',
-                      '')); // Remove the % symbol and parse the value as a double
-                  // Do something with the humidity value
-                  break;
-                case "Body Temperature":
-                  temp = double.parse(value.replaceAll('F',
-                      '')); // Remove the F suffix and parse the value as a double
-                  // Do something with the body temperature value
-                  break;
-                case "Air Temperature":
-                  sp02 = double.parse(value.replaceAll('C',
-                      '')); // Remove the C suffix and parse the value as a double
-                  // Do something with the air temperature value
-                  break;
-                default:
-                  // Handle unknown keys
-                  break;
+          // messages.add(String.fromCharCodes(data));
+          // String curr = String.fromCharCodes(data);
+          tempp += String.fromCharCodes(data)
+              .replaceAll(RegExp(r"\r\n|\r|\n"), '')
+              .replaceAll('\n', '');
+          if (tempp.length > 90) {
+            List<String> lines = [
+              "Heart Rate:",
+              "BP:",
+              "Air Humidity:",
+              "Temperature:",
+              "SPO2:",
+              ""
+            ];
+            List<String> values = extractValues(tempp);
+            for (int i = 0; i < values.length; i++) {
+              lines[i] += values[i];
+            }
+            print(lines);
+            print(lines.length);
+            for (String line in lines) {
+              List<String> parts = line.split(':');
+              // Split each line into key-value pairs
+              if (parts.length > 1) {
+                String key = parts[0]
+                    .trim(); // Extract the key and remove any leading/trailing spaces
+                String value = parts[1]
+                    .trim(); // Extract the value and remove any leading/trailing spaces
+                print("${parts[0]}\n ${parts[1]}");
+                switch (key) {
+                  case "Heart Rate":
+                    heartRate = double.parse(value.replaceAll('%',
+                        '')); // Remove the % symbol and parse the value as a double
+                    // Do something with the oxygen value
+                    break;
+                  case "BP":
+                    bp = double.parse(value.replaceAll('BPM',
+                        '')); // Remove the BPM suffix and parse the value as an integer
+                    // Do something with the pressure value
+                    break;
+                  case "Air Humidity":
+                    air = double.parse(value.replaceAll('%',
+                        '')); // Remove the % symbol and parse the value as a double
+                    // Do something with the humidity value
+                    break;
+                  case "Temperature":
+                    temp = double.parse(value.replaceAll('F',
+                        '')); // Remove the F suffix and parse the value as a double
+                    // Do something with the body temperature value
+                    break;
+                  case "SPO2":
+                    sp02 = double.parse(value.replaceAll('C',
+                        '')); // Remove the C suffix and parse the value as a double
+                    // Do something with the air temperature value
+                    break;
+                  default:
+                    // Handle unknown keys
+                    break;
+                }
               }
             }
+            tempp = "";
           }
         });
       });

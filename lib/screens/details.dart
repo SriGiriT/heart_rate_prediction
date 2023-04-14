@@ -37,14 +37,13 @@ class _DetailsPageState extends State<DetailsPage> {
 
     setState(() {
       this.data = Data1(
-        username: name,
-        age: email,
-        dob: dateOfBirth.toString().substring(0, 10),
-        bloodGroup: bloodGroup,
-        hasPreviousAttack: hasAttacked,
-        emergencyContactsName: emergencyContactsName,
-        emergencyContactsNumber: emergencyContactsNumber
-      );
+          username: name,
+          age: email,
+          dob: dateOfBirth.toString().substring(0, 10),
+          bloodGroup: bloodGroup,
+          hasPreviousAttack: hasAttacked,
+          emergencyContactsName: emergencyContactsName,
+          emergencyContactsNumber: emergencyContactsNumber);
     });
   }
 
@@ -87,9 +86,80 @@ class _DetailsPageState extends State<DetailsPage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
-              Text(
-                'Emergency Contacts:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Text(
+                    'Emergency Contacts:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(onPressed: () async {
+                    final result = await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        late String name;
+                        late String number;
+                        return AlertDialog(
+                          title: Text('Add Emergency Contact'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              TextFormField(
+                                onChanged: (value) {
+                                  name = value;
+                                },
+                                decoration: InputDecoration(labelText: 'Name'),
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return 'Please enter the name';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  name = value!;
+                                },
+                              ),
+                              TextFormField(
+                                onChanged: (value) {
+                                  number = value;
+                                },
+                                decoration:
+                                    InputDecoration(labelText: 'Number'),
+                                keyboardType: TextInputType.phone,
+                                validator: (value) {
+                                  if (value!.isEmpty) {
+                                    return 'Please enter the number';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (value) {
+                                  number = value!;
+                                },
+                              ),
+                            ],
+                          ),
+                          actions: <Widget>[
+                            ElevatedButton(
+                              child: Text('CANCEL'),
+                              onPressed: () {
+                                Navigator.pop(context, null);
+                              },
+                            ),
+                            ElevatedButton(
+                              child: Text('ADD'),
+                              onPressed: () {
+                                  setState(() {
+                                    data.emergencyContactsName.add(name);
+                                    data.emergencyContactsNumber.add(number);
+                                  });
+                                  Navigator.pop(context, true);
+                                }
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }, icon: Icon(Icons.add))
+                ],
               ),
               SizedBox(height: 8),
               if (data.emergencyContactsName.isEmpty)
@@ -97,7 +167,7 @@ class _DetailsPageState extends State<DetailsPage> {
                   'No contacts added',
                   style: TextStyle(fontSize: 20),
                 ),
-              for (var i=0;i<data.emergencyContactsName.length;i++)
+              for (var i = 0; i < data.emergencyContactsName.length; i++)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
