@@ -8,9 +8,9 @@ import 'package:heart_rate_prediction/screens/details.dart';
 import 'package:heart_rate_prediction/screens/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twilio_flutter/twilio_flutter.dart';
-
 import '../components/reusable_card.dart';
 import '../data/data.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -20,6 +20,7 @@ class BluetoothScreen extends StatefulWidget {
 class _BluetoothScreenState extends State<BluetoothScreen> {
   late TwilioFlutter twilioFlutter;
   String tempp = "";
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   late Gender selectedGender = Gender.male;
   double heartRate = 89;
   double bp = 108;
@@ -27,15 +28,71 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   double temp = 98.6;
   double sp02 = 86;
   late Data1 data;
+  bool isAlreadyAttacked = false;
   @override
   void initState() {
+    getPermission();
     getUserData();
     twilioFlutter = TwilioFlutter(
         accountSid: "ACe52b8ec3949369210debd07d18593e02",
         authToken: "${dotenv.env['TOKEN']}",
         twilioNumber: "+15074485128");
-
     super.initState();
+  }
+
+  Future<void> getPermission() async {
+    if (await Permission.location.isGranted) {
+    } else {
+      final status = await Permission.location.request();
+      if (status == PermissionStatus.granted) {
+      } else {
+        bool result = await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Permission required'),
+                content:
+                    Text('The app needs permission to access nearby devices.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            });
+      }
+    }
+    if (await Permission.bluetooth.isGranted) {
+    } else {
+      final status = await Permission.bluetooth.request();
+      if (status == PermissionStatus.granted) {
+      } else {
+        bool result = await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Permission required'),
+                content:
+                    Text('The app needs permission to access nearby devices.'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            });
+      }
+    }
   }
 
   List<String> extractValues(String input) {
@@ -72,8 +129,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         prefs.getStringList('emergencyContactsName') ?? [];
     List<String> emergencyContactsNumber =
         prefs.getStringList('emergencyContactsNumber') ?? [];
-    // EmergencyContact emergencyContacts =
-    //     encodedContacts.map((e) => EmergencyContact.fromJson(json.decode(e))).toList()[0];
 
     setState(() {
       this.data = Data1(
@@ -87,13 +142,29 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     });
   }
 
-  void sendSms(String message) async {
+  void sendSms(String message, String particular) async {
     for (int i = 0; i < data.emergencyContactsNumber.length; i++) {
       print(data.emergencyContactsNumber);
-      twilioFlutter.sendSMS(
-          toNumber: "+91${data.emergencyContactsNumber[i]}",
-          messageBody:
-              '${data.username} currently have some health issues with readings of\n$message');
+      twilioFlutter
+          .sendSMS(
+              toNumber: "+91${data.emergencyContactsNumber[i]}",
+              messageBody: particular == "" ?
+                  '${data.username} currently have some health issues with readings of\n$message' : "'${data.username} currently have abnormal $particular reading of\n$message'")
+          .then((value) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: kActiveCardColour,
+          content: Text(
+            'Message sent! to ${data.emergencyContactsName[i]}',
+            style: kLabelTextStyle.copyWith(color: Colors.white),
+          ),
+          duration: Duration(seconds: 4),
+        ));
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Message wasn't sent!"),
+          duration: Duration(seconds: 4),
+        ));
+      });
     }
   }
 
@@ -102,16 +173,20 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   List<String> messages = [];
 
   Future<void> connectToDevice() async {
-    BluetoothDevice selectedDevice = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => DiscoveryPage(),
-      ),
-    );
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String seleceddevice = prefs.getString('device') ?? "";
+    BluetoothDevice selectedDevice = seleceddevice == ""
+        ? await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => DiscoveryPage(),
+            ),
+          )
+        : BluetoothDevice(address: seleceddevice);
 
     if (selectedDevice != null) {
       BluetoothConnection newConnection =
           await BluetoothConnection.toAddress(selectedDevice.address);
-
+      prefs.setString('device', selectedDevice.address);
       setState(() {
         connection = newConnection;
         isConnected = true;
@@ -119,9 +194,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
       newConnection.input!.listen((Uint8List data) {
         setState(() {
-          // print(String.fromCharCodes(data));
-          // messages.add(String.fromCharCodes(data));
-          // String curr = String.fromCharCodes(data);
           tempp += String.fromCharCodes(data)
               .replaceAll(RegExp(r"\r\n|\r|\n"), '')
               .replaceAll('\n', '');
@@ -142,41 +214,47 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             print(lines.length);
             for (String line in lines) {
               List<String> parts = line.split(':');
-              // Split each line into key-value pairs
               if (parts.length > 1) {
                 String key = parts[0]
-                    .trim(); // Extract the key and remove any leading/trailing spaces
+                    .trim(); 
                 String value = parts[1]
-                    .trim(); // Extract the value and remove any leading/trailing spaces
+                    .trim();
                 print("${parts[0]}\n ${parts[1]}");
                 switch (key) {
                   case "Heart Rate":
-                    heartRate = double.parse(value.replaceAll('%',
-                        '')); // Remove the % symbol and parse the value as a double
-                    // Do something with the oxygen value
+                    heartRate = double.parse(value.replaceAll('%', ''));
+                    if ((heartRate < 60 || heartRate > 100) &&
+                        !isAlreadyAttacked) {
+                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "heart rate");
+                      isAlreadyAttacked = true;
+                    }
                     break;
                   case "BP":
-                    bp = double.parse(value.replaceAll('BPM',
-                        '')); // Remove the BPM suffix and parse the value as an integer
-                    // Do something with the pressure value
+                    bp = double.parse(value.replaceAll('BPM', ''));
+                    if ((bp > 140 || bp < 60) && !isAlreadyAttacked) {
+                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "blood pressure");
+                      isAlreadyAttacked = true;
+                    }
                     break;
                   case "Air Humidity":
-                    air = double.parse(value.replaceAll('%',
-                        '')); // Remove the % symbol and parse the value as a double
-                    // Do something with the humidity value
+                    air = double.parse(value.replaceAll('%', ''));
                     break;
                   case "Temperature":
-                    temp = double.parse(value.replaceAll('F',
-                        '')); // Remove the F suffix and parse the value as a double
-                    // Do something with the body temperature value
+                    temp = double.parse(value.replaceAll('F', ''));
+                    if (temp > 105 && !isAlreadyAttacked) {
+                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "Temperature");
+                      isAlreadyAttacked = true;
+                    }
                     break;
                   case "SPO2":
                     sp02 = double.parse(value.replaceAll('C', ''));
                     if (sp02 < 10) {
                       sp02 += 90;
                     }
-                    // Remove the C suffix and parse the value as a double
-                    // Do something with the air temperature value
+                    if (sp02 < 90 && !isAlreadyAttacked) {
+                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "SPO2");
+                      isAlreadyAttacked = true;
+                    }
                     break;
                   default:
                     // Handle unknown keys
@@ -201,6 +279,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   Widget build(BuildContext context) {
     return isConnected
         ? Scaffold(
+            key: _scaffoldKey,
             appBar: AppBar(
               backgroundColor: Color(0xFF0A0E21),
               title: Text('Health Monitor'),
@@ -208,7 +287,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 IconButton(
                     onPressed: () {
                       sendSms(
-                          "Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02");
+                          "Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "");
                     },
                     icon: Icon(
                       Icons.sos,

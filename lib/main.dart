@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twilio_flutter/twilio_flutter.dart';
 import 'package:heart_rate_prediction/constant.dart';
 import 'package:heart_rate_prediction/screens/main_page.dart';
-
 Future main() async{
   await dotenv.load(fileName: ".env");
   runApp(const MyApp());
