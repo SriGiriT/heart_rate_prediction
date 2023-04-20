@@ -197,34 +197,34 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         setState(() {
           List<String> lines =
               String.fromCharCodes(data).split(RegExp(r"\r\n|\r|\n"));
-            for (String line in lines) {
-              List<String> parts = line.split(':');
-              if (parts.length > 1) {
-                String key = parts[0];
-                String value = parts[1];
-                print("${parts[0]}\n ${parts[1]}");
-                switch (key) {
-                  case "Blood Oxygen":
-                    heartRate = double.parse(value.replaceAll('%', ''));
-                    break;
-                  case "Blood Pressure":
-                    bp = double.parse(value.replaceAll('BPM', ''));
-                    break;
-                  case "Air Humidity":
-                    air = double.parse(value.replaceAll('%', ''));
-                    break;
-                  case "Body Temperature":
-                    temp = double.parse(value.replaceAll('F', ''));
-                    break;
-                  case "Air Temperature":
-                    sp02 = double.parse(value.replaceAll('C', ''));
-                    break;
-                  default:
-                    // Handle unknown keys
-                    break;
-                }
+          for (String line in lines) {
+            List<String> parts = line.split(':');
+            if (parts.length > 1) {
+              String key = parts[0].trim();
+              String value = parts[1].trim();
+              // print("${parts[0]}  ${parts[1]}");
+              switch (key) {
+                case "Blood Oxygen":
+                  heartRate = double.parse(value.replaceAll('%', ''));
+                  break;
+                case "Blood Pressure":
+                  bp = double.parse(value.replaceAll('BPM', ''));
+                  break;
+                case "Air Humidity":
+                  air = double.parse(value.replaceAll('%', ''));
+                  break;
+                case "Body Temperature":
+                  temp = double.parse(value.replaceAll('F', ''));
+                  break;
+                case "Air Temperature":
+                  sp02 = double.parse(value.replaceAll('C', ''));
+                  break;
+                default:
+                  // Handle unknown keys
+                  break;
               }
             }
+          }
         });
       });
 
@@ -282,7 +282,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                'Heart Rate',
+                                'Blood Oxygen',
                                 style: kLabelTextStyle,
                               ),
                               Row(
@@ -295,7 +295,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                     style: kNumberTextStyle,
                                   ),
                                   Text(
-                                    "  BPM",
+                                    "  %",
                                     style: kLabelTextStyle,
                                   )
                                 ],
@@ -325,7 +325,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                                     style: kNumberTextStyle,
                                   ),
                                   Text(
-                                    "  mmHg",
+                                    "  BMP",
                                     style: kLabelTextStyle,
                                   )
                                 ],
@@ -378,7 +378,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                'Temperature',
+                                'Body Temperature',
                                 style: kLabelTextStyle,
                               ),
                               Row(
@@ -414,7 +414,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               Text(
-                                'SPO2',
+                                'Atms Temperature',
                                 style: kLabelTextStyle,
                               ),
                               Row(
