@@ -95,28 +95,28 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     }
   }
 
-  List<String> extractValues(String input) {
-    List<String> values = [];
-    List<String> val = ["BPM", "mmHg", "%", "F", "%", "", ""];
-    int ind = 0;
-    String varr = val[ind];
-    for (int i = 0; i < input.length; i++) {
-      if (input[i] == ':') {
-        int endIndex = input.indexOf("$varr", i + 1);
-        if (endIndex == -1) {
-          values.add(input.substring(i + 1).trim());
-          break;
-        } else {
-          String value = input.substring(i + 1, endIndex).trim();
-          values.add(value);
-          i = endIndex;
-        }
-        if (ind >= val.length) break;
-        varr = val[++ind];
-      }
-    }
-    return values;
-  }
+  // List<String> extractValues(String input) {
+  //   List<String> values = [];
+  //   List<String> val = ["BPM", "mmHg", "%", "F", "%", "", ""];
+  //   int ind = 0;
+  //   String varr = val[ind];
+  //   for (int i = 0; i < input.length; i++) {
+  //     if (input[i] == ':') {
+  //       int endIndex = input.indexOf("$varr", i + 1);
+  //       if (endIndex == -1) {
+  //         values.add(input.substring(i + 1).trim());
+  //         break;
+  //       } else {
+  //         String value = input.substring(i + 1, endIndex).trim();
+  //         values.add(value);
+  //         i = endIndex;
+  //       }
+  //       if (ind >= val.length) break;
+  //       varr = val[++ind];
+  //     }
+  //   }
+  //   return values;
+  // }
 
   void getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -148,8 +148,9 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       twilioFlutter
           .sendSMS(
               toNumber: "+91${data.emergencyContactsNumber[i]}",
-              messageBody: particular == "" ?
-                  '${data.username} currently have some health issues with readings of\n$message' : "'${data.username} currently have abnormal $particular reading of\n$message'")
+              messageBody: particular == ""
+                  ? '${data.username} currently have some health issues with readings of\n$message'
+                  : "'${data.username} currently have abnormal $particular reading of\n$message'")
           .then((value) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: kActiveCardColour,
@@ -194,67 +195,29 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
 
       newConnection.input!.listen((Uint8List data) {
         setState(() {
-          tempp += String.fromCharCodes(data)
-              .replaceAll(RegExp(r"\r\n|\r|\n"), '')
-              .replaceAll('\n', '');
-          if (tempp.length > 90) {
-            List<String> lines = [
-              "Heart Rate:",
-              "BP:",
-              "Air Humidity:",
-              "Temperature:",
-              "SPO2:",
-              ""
-            ];
-            List<String> values = extractValues(tempp);
-            for (int i = 0; i < values.length; i++) {
-              lines[i] += values[i];
-            }
-            print(lines);
-            print(lines.length);
+          List<String> lines =
+              String.fromCharCodes(data).split(RegExp(r"\r\n|\r|\n"));
             for (String line in lines) {
               List<String> parts = line.split(':');
               if (parts.length > 1) {
-                String key = parts[0]
-                    .trim(); 
-                String value = parts[1]
-                    .trim();
+                String key = parts[0];
+                String value = parts[1];
                 print("${parts[0]}\n ${parts[1]}");
                 switch (key) {
-                  case "Heart Rate":
+                  case "Blood Oxygen":
                     heartRate = double.parse(value.replaceAll('%', ''));
-                    if ((heartRate < 60 || heartRate > 100) &&
-                        !isAlreadyAttacked) {
-                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "heart rate");
-                      isAlreadyAttacked = true;
-                    }
                     break;
-                  case "BP":
+                  case "Blood Pressure":
                     bp = double.parse(value.replaceAll('BPM', ''));
-                    if ((bp > 140 || bp < 60) && !isAlreadyAttacked) {
-                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "blood pressure");
-                      isAlreadyAttacked = true;
-                    }
                     break;
                   case "Air Humidity":
                     air = double.parse(value.replaceAll('%', ''));
                     break;
-                  case "Temperature":
+                  case "Body Temperature":
                     temp = double.parse(value.replaceAll('F', ''));
-                    if (temp > 105 && !isAlreadyAttacked) {
-                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "Temperature");
-                      isAlreadyAttacked = true;
-                    }
                     break;
-                  case "SPO2":
+                  case "Air Temperature":
                     sp02 = double.parse(value.replaceAll('C', ''));
-                    if (sp02 < 10) {
-                      sp02 += 90;
-                    }
-                    if (sp02 < 90 && !isAlreadyAttacked) {
-                      sendSms("Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "SPO2");
-                      isAlreadyAttacked = true;
-                    }
                     break;
                   default:
                     // Handle unknown keys
@@ -262,8 +225,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 }
               }
             }
-            tempp = "";
-          }
         });
       });
 
@@ -287,7 +248,8 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 IconButton(
                     onPressed: () {
                       sendSms(
-                          "Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02", "");
+                          "Emergency Alert\nHeart Rate-$heartRate\nBp-$bp\nAir Humidity-$air\nTemperature-$temp\nSPO2-$sp02",
+                          "");
                     },
                     icon: Icon(
                       Icons.sos,
